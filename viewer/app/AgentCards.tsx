@@ -123,9 +123,9 @@ export default function AgentCards({ onBisectClick }: { onBisectClick: () => voi
                   style={{
                     width: "100%",
                     padding: "8px 12px",
-                    background: "linear-gradient(180deg, #f0883e, #d97a30)",
-                    color: "#fff",
-                    border: "none",
+                    background: "#f0883e",
+                    color: "#0d1117",
+                    border: "1px solid #f0883e",
                     borderRadius: 6,
                     fontSize: 12,
                     fontWeight: 700,
@@ -135,39 +135,10 @@ export default function AgentCards({ onBisectClick }: { onBisectClick: () => voi
                   🔍 bisect this run
                 </button>
               )}
-
-              {agent.status === "running" && (
-                <div
-                  style={{
-                    width: "100%",
-                    height: 4,
-                    background: "#1a1f2a",
-                    borderRadius: 2,
-                    overflow: "hidden",
-                    marginTop: 4,
-                  }}
-                >
-                  <div
-                    style={{
-                      width: "100%",
-                      height: "100%",
-                      background: "linear-gradient(90deg, transparent, #f0883e, transparent)",
-                      animation: "shimmer 1.5s infinite",
-                    }}
-                  />
-                </div>
-              )}
             </div>
           );
         })}
       </div>
-
-      <style>{`
-        @keyframes shimmer {
-          0% { transform: translateX(-100%); }
-          100% { transform: translateX(100%); }
-        }
-      `}</style>
     </section>
   );
 }

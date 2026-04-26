@@ -68,7 +68,7 @@ export default function Viewer({ initialData }: { initialData: Status }) {
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "1fr 1.4fr 1fr",
+          gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1.2fr) minmax(0, 1fr)",
           gap: 16,
           marginTop: 24,
         }}
@@ -90,17 +90,17 @@ export default function Viewer({ initialData }: { initialData: Status }) {
         <button
           onClick={() => setNonce((n) => n + 1)}
           style={{
-            padding: "10px 20px",
-            background: "#1f6feb",
-            color: "#fff",
-            border: "none",
-            borderRadius: 8,
+            padding: "8px 18px",
+            background: "transparent",
+            color: "#79b8ff",
+            border: "1px solid #30363d",
+            borderRadius: 6,
             fontSize: 13,
-            fontWeight: 600,
+            fontWeight: 500,
             cursor: "pointer",
           }}
         >
-          ▶ Replay bisection
+          ▶ Replay
         </button>
       </div>
     </main>
@@ -187,13 +187,24 @@ function Timeline({
   firstBad?: number;
 }) {
   return (
-    <div style={{ background: "#0d1117", border: "1px solid #30363d", borderRadius: 12, padding: 16 }}>
+    <div
+      style={{
+        background: "#0d1117",
+        border: "1px solid #30363d",
+        borderRadius: 12,
+        padding: 16,
+        minWidth: 0, // critical: lets grid column shrink and let children truncate
+        overflow: "hidden",
+      }}
+    >
       <h2 style={{ fontSize: 14, color, marginBottom: 12, fontWeight: 700 }}>{title}</h2>
       {decisions.length === 0 && <p style={{ color: "#8b949e", fontSize: 13 }}>(no decisions captured)</p>}
       {decisions.map((d) => {
         const inRange = range && d.decision_id >= range[0] && d.decision_id <= range[1];
         const isMid = highlight === d.decision_id;
         const isFirstBad = firstBad === d.decision_id;
+        // Truncate args preview hard — JSON can be huge (write_file content)
+        const preview = d.args_json.length > 80 ? d.args_json.slice(0, 80) + "…" : d.args_json;
         return (
           <div
             key={d.decision_id}
@@ -201,14 +212,18 @@ function Timeline({
               padding: "8px 10px",
               marginBottom: 4,
               borderRadius: 6,
-              background: isFirstBad ? "#5a1a1a" : isMid ? "#3a2d10" : inRange ? "#1a1f2a" : "#0d1117",
+              background: isFirstBad ? "#3a1010" : isMid ? "#2a1f08" : inRange ? "#161b22" : "#0d1117",
               border: isFirstBad ? "2px solid #f97583" : isMid ? "2px solid #f0883e" : "1px solid transparent",
               fontSize: 12,
+              minWidth: 0,
+              overflow: "hidden",
             }}
             className="mono"
           >
-            <span style={{ color: "#8b949e" }}>#{d.decision_id}</span>{" "}
-            <span style={{ color: "#79b8ff" }}>{d.tool_name}</span>
+            <div style={{ display: "flex", gap: 6, alignItems: "baseline" }}>
+              <span style={{ color: "#8b949e", flexShrink: 0 }}>#{d.decision_id}</span>
+              <span style={{ color: "#79b8ff", flexShrink: 0 }}>{d.tool_name}</span>
+            </div>
             <div
               style={{
                 color: "#8b949e",
@@ -217,9 +232,10 @@ function Timeline({
                 whiteSpace: "nowrap",
                 overflow: "hidden",
                 textOverflow: "ellipsis",
+                maxWidth: "100%",
               }}
             >
-              {d.args_json}
+              {preview}
             </div>
           </div>
         );
@@ -292,18 +308,29 @@ function ResultCard({ status }: { status: Status }) {
       style={{
         marginTop: 24,
         padding: 24,
-        background: "linear-gradient(180deg, #1a3d20, #0d1117)",
-        border: "2px solid #3fb950",
+        background: "#0d1117",
+        border: "1px solid #3fb950",
         borderRadius: 12,
       }}
     >
       <h2 style={{ fontSize: 18, color: "#3fb950", fontWeight: 700, marginBottom: 8 }}>
         🎯 First bad decision found
       </h2>
-      <div className="mono" style={{ fontSize: 32, fontWeight: 700, color: "#fff", marginBottom: 12 }}>
+      <div className="mono" style={{ fontSize: 32, fontWeight: 700, color: "#e6edf3", marginBottom: 12 }}>
         #{status.first_bad_decision_id}
       </div>
-      <div className="mono" style={{ fontSize: 13, color: "#c9d1d9", whiteSpace: "pre-wrap" }}>
+      <div
+        className="mono"
+        style={{
+          fontSize: 13,
+          color: "#c9d1d9",
+          whiteSpace: "pre-wrap",
+          wordBreak: "break-word",
+          maxHeight: 80,
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+        }}
+      >
         {status.first_bad_summary}
       </div>
       <div style={{ marginTop: 16, fontSize: 12, color: "#8b949e" }}>
