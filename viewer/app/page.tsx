@@ -103,7 +103,16 @@ function Header() {
         cmux-bisect <span style={{ color: "#8b949e", fontWeight: 400 }}>· live viewer</span>
       </h1>
       <p style={{ color: "#8b949e", marginTop: 4 }}>
-        git bisect for AI agent decisions — localize the first bad tool call in log₂(N) trials
+        AI 에이전트의 결정 트리에 git bisect 적용 — log₂(N) 시도로 첫 번째 잘못된 tool call 찾기
+      </p>
+      <p style={{ color: "#6b7280", marginTop: 4, fontSize: 13 }}>
+        <a href="https://github.com/mrjunejeong/cmux-bisect" style={{ marginRight: 12 }}>
+          GitHub
+        </a>
+        ·
+        <span style={{ marginLeft: 12 }}>
+          MIT · Built for the 2026-04-26 모나코스페이스 hackathon
+        </span>
       </p>
     </header>
   );
