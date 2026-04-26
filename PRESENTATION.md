@@ -1,170 +1,151 @@
-# PRESENTATION
+# PRESENTATION — 무대 위 외워서 말함
 
-> 무대 위 발표용. 본인 + 팀 누구든 이 파일만 읽으면 60초 pitch + 4개 핵심 Q&A 답변 가능. 한국어 우선 + English fallback.
-
----
-
-## 60초 무대 narrative (한국어, 외움)
-
-```
-[0-10s] 페인
-"AI 에이전트가 30분 task 돌려서 결과가 깨졌습니다. 그 동안 50개의 결정을
-내렸어요. 어느 결정이 첫 번째로 잘못된 결정인가요?
-지금은 30분짜리 trace 를 사람이 1시간 들여 읽거나, 처음부터 다시 돌립니다."
-
-[10-20s] 멘탈 모델
-"git bisect 다 아시죠? 500개 commit 중 어느 게 깼는지 9번에 찾는 binary search.
-저희는 같은 알고리즘을 AI 에이전트의 결정 트리에 적용했습니다."
-
-[20-40s] 라이브 데모
-$ cmux-bisect bisect --good GOOD --bad BAD \
-    --oracle "pytest" --trials 3 --max-turns 2
-
-[화면에 6 라운드 진행, 각 라운드 K=3 trial]
-[majority vote 시각화: ✓ ✓ → PASS, ✗ ✗ → FAIL]
-[범위 좁혀지는 애니메이션]
-
-"3 라운드 후 결정 #4 — 에이전트가 src 대신 tests 를 수정하려 한 순간."
-
-[40-50s] 우리만의 무기 (Russ Cox)
-"비결정적인 에이전트에 binary search 가 작동할까?
-Russ Cox 가 Go 컴파일러용 hash-bisect 에서 정확히 같은 문제를 인정하고
-K-runs aggregation 을 제시했습니다. 우리는 그의 recipe 를
-LLM 결정 트리에 처음 적용. cmux worktree primitive 가
-trial 당 cost 를 $0.10 으로 만든 게 우리의 실질적 기여."
-
-[50-60s] 마무리
-"엔지니어 1시간 → 5분, 60배.
-github.com/mrjunejeong/cmux-bisect
-cmux-bisect.vercel.app
-지금 clone 가능합니다."
-```
+> 누구든 (git bisect 모르는 사람도) 60초에 이해되도록 작성. 한국어 우선.
 
 ---
 
-## 4 Q&A 미리 답 외움
-
-### Q1: "이거 그냥 reverse delta-debugging 아닌가요?" *(Juhyun Song / KAIST 류 sec 사람)*
-
-**답**: "Delta-debugging 은 input minimization. 우리는 stochastic re-execution 의 single decision 을 localize. 진짜 차이는 **cmux worktree primitive 가 round 당 $0.10 으로 만든 게 신규**. Engineer 시간 대비 60배 cheaper."
-
-### Q2: "Agent 가 비결정적인데 binary search 가 어떻게 작동하나요?" *(가장 흔한 질문)*
-
-**답**: "**Russ Cox 본인이 'flaky tests are bisect's open problem' 이라고 명시했고 K-runs aggregation 을 추천했습니다.** 우리는 그의 framework 를 LLM 결정 트리에 처음 적용. K=3 majority vote, K log₂(N) 라운드 = 18 trial ≈ $3. 실험 데모에서 3 라운드만에 첫 나쁜 결정 #4 를 정확히 localize 했습니다."
-
-### Q3: "AgentDebug, CodeTracer 같은 기존 연구와 어떻게 다른가요?" *(Dasol Choi / 학술 사람)*
-
-**답**: "AgentDebug 는 static trace 위 passive LLM-judge — re-run 안 해서 counterfactual 검증 불가. CodeTracer 는 re-run 하지만 hierarchical traversal + 자기 trace format 요구. **cmux-bisect 의 moat = worktree-fork primitive 로 ground-truth oracle (test suite) 위에서 bisect — judge hallucination 없음**. 알고리즘은 단순 binary search 지만 그게 강점입니다."
-
-### Q4: "Claude Code 에 이미 /fork /rewind 가 있는데 왜 새로 만드나요?" *(Austin Wang 풍)*
-
-**답**: "/fork /rewind 는 single-shot, 사람이 50번 클릭해야 합니다. cmux-bisect 는 자동 binary-search loop, 6번 자동 = 10배 빠름. 그리고 cmux 가 worktree primitive 갖춰서 가능했습니다 — 당신 PR #3046, #3151 이 이걸 가능하게 만들었어요."
-
----
-
-## 60-second English version (fallback)
+## 60초 narrative (그대로 외움)
 
 ```
-[0-10s] PAIN
-"An AI coding agent runs for 30 minutes and produces a broken result.
-It made 50 decisions. Which one was the first wrong one?
-Today: read the trace for an hour, or restart and pray."
+[화면: cmux-bisect.vercel.app, 4 agent 카드 보임]
 
-[10-20s] MENTAL MODEL
-"You all know git bisect. 500 commits, 9 yes/no questions, binary
-search to the bad commit. We applied the same algorithm to an
-AI agent's decision tree."
+"AI 코딩 도구 다 쓰시죠? Claude Code, Cursor, Copilot.
+'이 버그 고쳐줘' 시키면 AI 가 30분 동안 일해요.
+파일 읽고, 코드 쓰고, 테스트 돌리고...
+그동안 50개 정도 결정을 합니다.
 
-[20-40s] LIVE DEMO
-$ cmux-bisect bisect --good GOOD --bad BAD \
-    --oracle "pytest" --trials 3 --max-turns 2
+그런데 30분 후 보니 결과가 깨졌어요.
+테스트 여전히 실패. 또는 AI 가 거짓말로 '다 됐다' 보고함.
 
-[6 rounds visible, K=3 majority vote per midpoint]
-[Trial votes light up green/red]
-[Range narrows]
+질문: 50개 결정 중 어느 결정이 첫 번째로 잘못된 결정인가요?
 
-"3 rounds in, decision #4 — that's where the agent committed to
-modifying tests instead of source."
+지금 답하는 방법:
+- 30분짜리 trace 처음부터 읽기 → 1시간
+- 처음부터 다시 시키기 → 또 30분 + 비용
+- 다른 AI 한테 묻기 → 추측, 검증 안 됨
 
-[40-50s] WHY US (Russ Cox card)
-"Agents are flaky. Does binary search even work?
-Russ Cox identified flakiness as the open problem of bisect in his
-hash-based bisect work for Go, and proposed K-runs aggregation.
-We're the first to apply his recipe to LLM decision trees.
-cmux's worktree primitive makes each trial cost $0.10."
+저희 도구 cmux-bisect 는:
+1-100 사이 숫자 맞추기 게임 아시죠?
+'1이야? 2이야?' 가 아니라 '50보다 커?' 한 번에 절반 자르는 그것.
+같은 원리를 AI 결정 50개에 적용했어요.
 
-[50-60s] CLOSE
-"Engineer hour to 5 minutes. 60x.
-github.com/mrjunejeong/cmux-bisect
-cmux-bisect.vercel.app
-Clone it now."
+[화면: Agent D 카드의 'bisect this run' 버튼 클릭]
+
+여기 Agent D 가 sort 버그 fix 시도했는데 실패. 6개 결정.
+
+[애니메이션 진행 — round 1, 2, 3]
+
+Round 1: 결정 #2 부터 다시 fork 해서 시도 → 통과.
+Round 2: 결정 #4 부터 다시 시도 → 실패.
+Round 3: 결정 #3 부터 → 통과.
+
+3 라운드 만에 답: 결정 #4.
+'AI 가 src/ 대신 tests/ 를 수정한 그 순간이 망친 시점.'
+
+이 도구의 핵심:
+- 추측 아니라 진짜 테스트 슈트로 검증
+- AI 가 거짓말 했어도 실제 코드 다시 돌려서 catch
+- 1시간 → 5분.
+
+GitHub: github.com/mrjunejeong/cmux-bisect
+Live demo: cmux-bisect.vercel.app
+끝."
 ```
 
 ---
 
-## 무대 셋업 체크리스트
+## 더 짧게 (30초)
+
+```
+"AI agent 가 30분 일해서 50개 결정 후 결과 깨졌어요.
+어느 결정이 첫 번째로 잘못된 결정?
+지금: 사람이 1시간 trace 읽음.
+
+cmux-bisect 는 이분 탐색으로 자동 6번 fork → 답.
+[demo] 결정 #4. AI 가 src 대신 tests 를 수정한 순간.
+1시간 → 5분.
+
+cmux-bisect.vercel.app"
+```
+
+---
+
+## 5초 엘리베이터
+
+> **"AI 가 30분 일하다 망쳤을 때, 50개 결정 중 어디서 망쳤는지 5분 안에 자동으로 찾아주는 도구."**
+
+---
+
+## Q&A 답변 (외워야 할 4개)
+
+### Q: "그냥 다른 AI 한테 trace 던져서 '어디 잘못됐냐' 묻는 게 더 빠른 거 아닌가요?"
+**A**:
+> *"맞아요, 정직히 80% 케이스에서 그게 더 빠릅니다. 단 우리 도구가 우월한 narrow case 가 4가지:*
+> 1. *AI 가 거짓말 의심될 때 — 우리는 실제 코드 다시 돌려서 검증*
+> 2. *200개+ 결정 long trace — LLM judge 는 context window 한계*
+> 3. *Compliance/audit — '의견' 이 아닌 결정론적 답 필요*
+> 4. *CI 환경 — 사람이 매 PR 마다 복붙 못 함*
+>
+> *Generic tool 이 아닌 narrow tool 인 거 정직히 인정합니다."*
+
+### Q: "AI 가 매번 다르게 행동하는데 fork 다시 시키면 결과 다르지 않나요?"
+**A**:
+> *"맞습니다. 그래서 매 시도마다 K=3 번 반복 + 다수결 (majority vote). 같은 fork 를 3번 다시 돌려서 2번 이상 같은 결과 나오면 신뢰. Russ Cox 가 이 방법 추천한 거 그대로 적용 — 비결정적 시스템에서 binary search 하는 표준 recipe."*
+
+### Q: "잘 설정된 TDD agent 면 이거 필요 없는 거 아닌가요?"
+**A**:
+> *"맞아요. TDD 잘 따르는 agent + 좋은 테스트 슈트 = 우리 도구 가치 줄어듦. 단 현실은 agent 가 자주 TDD skip 하거나 test 자체를 cheat (예: 우리 데모 처럼 src 안 고치고 tests 를 수정). 그 케이스에서 우리가 진짜 코드 다시 실행 → AI 거짓말 catch."*
+
+### Q: "Cursor 의 /rewind, Aider 의 /undo 도 비슷한 거 아닌가요?"
+**A**:
+> *"Aider /undo, Cursor /rewind 는 single-shot — 사람이 한 번 클릭. 50개 결정 중 어느 게 잘못됐는지 모르면 50번 클릭해야 함. 우리는 자동 binary search loop = 6번 자동. log₂(50) 효율."*
+
+---
+
+## 무대 setup checklist
 
 **노트북 화면 split**:
-- 왼쪽: 터미널 (cmux-bisect bisect 라이브 실행)
-- 오른쪽: Chrome → `cmux-bisect.vercel.app`
+- 왼쪽 ⅔: 브라우저 → `https://cmux-bisect.vercel.app` (animation 자동 재생)
+- 오른쪽 ⅓: 터미널 (보조)
 
 **미리 열어둘 탭**:
-1. `cmux-bisect.vercel.app` (frozen demo 가 깔린 결과 화면)
-2. `github.com/mrjunejeong/cmux-bisect` (Q&A 시 코드 보여줄 때)
-3. `research.swtch.com/bisect` (Russ Cox 인용 backup)
+1. `cmux-bisect.vercel.app` (라이브 데모)
+2. `github.com/mrjunejeong/cmux-bisect` (Q&A 시 코드 보여주기)
 
-**터미널에 미리 cd 한 상태**:
-```bash
-cd ~/proj/cmux-bisect
-source ~/.config/cmux-bisect/env
-DEMO=$(pwd)/tmp-demo/sort-bug
-git -C $DEMO checkout -- .   # 데모 깨진 상태로 reset
-clear
-```
+**무대 행동**:
+1. 화면 켬 → 자동으로 4 agent 카드 + animated bisect 시작
+2. narrative 시작
+3. 30초 후쯤 Agent D 의 [bisect this run] 클릭 (애니메이션 reset + 강조)
+4. 결과 카드 fade in 보면서 narrative 마무리
+5. URLs 슬라이드 마지막 5초
 
-**polynomial 명령어 (붙여넣기 1줄, 발표 시작 직전)**:
-```bash
-npx tsx src/cli.ts bisect --good GOOD --bad BAD --repo $DEMO \
-  --prompt "Fix src/sortlib.py so all unittest tests pass." \
-  --oracle "python3 -m unittest discover tests/" \
-  --trials 3 --max-turns 2
-```
-
-**라이브 데모 실패 시 폴백**: 영상 미리 녹화해서 `~/proj/cmux-bisect/demo.mp4` 두기. 무대에서 영상 재생하면서 같은 narrative.
+**사고 대비**:
+- wifi 끊기면? → 영상 폴백 (사전 녹화 권장, 60초 Loom)
+- 페이지 안 뜨면? → GitHub README 의 quick start 그대로 보여줌
+- Q&A 모르면? → "정직히 narrow case 인 거 인정" 으로 escape
 
 ---
 
-## Submission form 체크리스트
+## 무대 위 1줄 cheat
+
+```
+1. AI 망친 50 결정 중 어디서? → 1시간 → 5분 (10초)
+2. 이분 탐색으로 자동 fork (15초)
+3. [demo: 결정 #4 = src 대신 tests 수정한 순간] (30초)
+4. cmux-bisect.vercel.app (5초)
+
+Q&A 답: narrow tool 정직 / K-trials majority vote / TDD 인정 / 자동 loop
+```
+
+---
+
+## Submission form 값
 
 | 필드 | 값 |
 |---|---|
-| Project name | cmux-bisect |
-| One-line description | git bisect for AI agent decisions — localize the first bad tool call in log₂(N) trials |
-| Track | 🛠 Developer Tooling (또는 🔴 AI Safety 백업) |
-| GitHub URL | https://github.com/mrjunejeong/cmux-bisect |
-| Demo URL | https://cmux-bisect.vercel.app *(Vercel import 후 확정)* |
-| Team | (이름 + 이메일 입력) |
-| Demo video | (Loom URL — 녹화 후 추가) |
-
----
-
-## 리허설
-
-**3회 권장**:
-1. 1회: 시간만 측정 (60초 안 넘는지)
-2. 2회: 거울/카메라 보면서 (눈맞춤 + 자세)
-3. 3회: 누군가 앞에서 (질문 받기)
-
-**Q1-Q4 답변 외워서 막힘없이 답하기**. 답이 너무 길어지지 않게 — 각 30초 이내.
-
----
-
-## 만약 시간 부족하면 (60→30초 압축)
-
-```
-"AI 에이전트가 30분 task 결과 깨짐. 50 결정 중 어느 게 첫 잘못된 결정?
-git bisect 알고리즘을 AI 결정 트리에 처음 적용.
-[데모 5초만 — 답 #4]
-Russ Cox 의 K-runs recipe 를 LLM 에 처음. $0.10/trial.
-github.com/mrjunejeong/cmux-bisect"
-```
+| Project name | `cmux-bisect` |
+| One-line description | `AI 가 30분 일한 후 결과가 깨졌을 때, 어느 결정이 첫 번째로 잘못된 결정인지 자동으로 찾아주는 도구. 이분 탐색으로 1시간을 5분으로.` |
+| English description | `Find the first bad decision in a failed AI agent run via binary search. Cuts hour-long trace reading to 5 minutes.` |
+| Track | 🛠 Developer Tooling |
+| GitHub | https://github.com/mrjunejeong/cmux-bisect |
+| Demo | https://cmux-bisect.vercel.app |
