@@ -64,6 +64,7 @@ Secrets:
 | 2026-04-26 15:10 | better-sqlite3 → pure JSON storage | Native binding broke when user's other terminal had Node 22 vs build's Node 20 (NODE_MODULE_VERSION 115 vs 127). JSON works on any Node 20+ + any Vercel runtime + zero install pain. Dataset is tiny (hundreds of rows) so perf is fine. |
 | 2026-04-26 15:30 | viewer/public/demo-status.json is **committed**, not gitignored | We want Vercel-hosted viewer to show a meaningful frozen demo from first load. CLI overwrites this file locally for live dev; only the latest committed version reaches production. Compromise: small JSON noise in git diffs is worth always-on demo. |
 | 2026-04-26 15:32 | writeStatus now mkdir -p + stderr on failure | Used to silently swallow ENOENT; the viewer would 404 forever and we'd not notice. Loud failure > silent failure — always. |
+| 2026-04-26 15:50 | Demo uses `--max-turns 2` to make bisect non-trivial | Without the cap, Gemini Flash recovers from any midpoint and every trial PASSes (bisect collapses to "last decision"). With cap=2, mid-bisect trials actually FAIL when replayed past the bad agent's commit point → meaningful 3-round localization at decision #4 (not #5). Frozen demo regenerated. |
 
 ---
 

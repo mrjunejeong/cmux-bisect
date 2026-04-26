@@ -5,10 +5,10 @@
   "divergence_turn": 0,
   "total_decisions_in_bad": 6,
   "total_rounds_estimate": 3,
-  "current_round": 2,
+  "current_round": 3,
   "current_lo": 3,
-  "current_hi": 5,
-  "current_midpoint": 4,
+  "current_hi": 4,
+  "current_midpoint": 3,
   "trial_votes": [
     "good",
     "good",
@@ -23,6 +23,11 @@
     {
       "round": 2,
       "midpoint": 4,
+      "passed": false
+    },
+    {
+      "round": 3,
+      "midpoint": 3,
       "passed": true
     }
   ],
@@ -95,8 +100,8 @@
   ],
   "user_prompt": "Fix src/sortlib.py so all unittest tests pass.",
   "oracle_cmd": "python3 -m unittest discover tests/",
-  "updated_at": 1777185005388,
-  "first_bad_decision_id": 5,
-  "first_bad_summary": "Turn 5: bash({\"cmd\":\"python3 -m unittest discover tests/\"})",
-  "rounds_used": 2
+  "updated_at": 1777185306146,
+  "first_bad_decision_id": 4,
+  "first_bad_summary": "Turn 4: write_file({\"content\":\"import sys, os, unittest\\nsys.path.insert(0, os.path.join(os.path.dirname(__file__), \\\".)",
+  "rounds_used": 3
 }

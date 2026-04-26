@@ -60,10 +60,11 @@ npx tsx src/cli.ts capture-run --repo $DEMO --run-id BAD \
 git -C $DEMO checkout -- .
 
 # 3. bisect — 두 run 사이에서 첫 나쁜 결정을 binary search 로 찾는다
+#    (--max-turns 2 로 인공 제한 = 각 trial 이 짧아 mistake 가 회복되지 못함 → 의미있는 bisect)
 npx tsx src/cli.ts bisect --good GOOD --bad BAD --repo $DEMO \
   --prompt "src/sortlib.py 를 고쳐서 모든 unittest 통과시켜라." \
   --oracle "python3 -m unittest discover tests/" \
-  --trials 3
+  --trials 3 --max-turns 2
 ```
 
 bisect 는 매 round 마다 `viewer/public/demo-status.json` 을 갱신합니다. 라이브로 시각화하려면 별도 터미널에서:
