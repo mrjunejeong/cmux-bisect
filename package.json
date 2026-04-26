@@ -1,0 +1,55 @@
+{
+  "name": "cmux-bisect",
+  "version": "0.1.0",
+  "description": "git bisect for AI agent decisions — localize the first bad tool call in log₂(N) trials",
+  "type": "module",
+  "license": "MIT",
+  "author": "June Jeong <mrjunejeong@gmail.com>",
+  "homepage": "https://github.com/mrjunejeong/cmux-bisect#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mrjunejeong/cmux-bisect.git"
+  },
+  "bugs": {
+    "url": "https://github.com/mrjunejeong/cmux-bisect/issues"
+  },
+  "keywords": [
+    "ai-agents",
+    "debugging",
+    "git-bisect",
+    "gemini",
+    "llm-tools",
+    "developer-tools"
+  ],
+  "bin": {
+    "cmux-bisect": "./dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "examples",
+    "scripts/init-example.sh",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx src/cli.ts",
+    "smoke:gemini": "tsx scripts/smoke-gemini.ts",
+    "smoke:agent": "tsx scripts/smoke-agent.ts",
+    "init-example": "bash scripts/init-example.sh"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@google/genai": "^0.10.0",
+    "chalk": "^5.3.0",
+    "commander": "^12.0.0",
+    "ora": "^8.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsx": "^4.7.0",
+    "typescript": "^5.4.0"
+  }
+}

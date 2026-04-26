@@ -1,0 +1,12 @@
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: ui-sans-serif, -apple-system, system-ui, "Segoe UI", sans-serif;
+  background: #0a0e1a;
+  color: #e6edf3;
+  line-height: 1.55;
+  min-height: 100vh;
+}
+code, pre, .mono {
+  font-family: ui-monospace, "JetBrains Mono", "Menlo", monospace;
+}
+a { color: #79b8ff; }
