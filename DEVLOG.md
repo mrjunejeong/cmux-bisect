@@ -61,40 +61,61 @@ Secrets:
 | 2026-04-26 14:40 | SQLite via better-sqlite3, single `cmux-bisect.db` file | Zero external service. PRIMARY KEY changed from `(run_id, turn)` to `(run_id, decision_id)` after first end-to-end test failed (multiple tool calls share a turn). |
 | 2026-04-26 14:50 | Replay prior decisions BOTH in system prompt AND on worktree FS | System prompt alone wasn't enough — agent saw clean worktree state and got confused. Now we re-execute write_file/bash/read_file on worktree before letting agent continue. |
 | 2026-04-26 14:55 | demo as plain files in `examples/`, runtime materialization to `tmp-demo/` | Avoids nested .git in main repo. Clone-friendly: `npm run init-example` bootstraps a runnable copy with its own git history. |
+| 2026-04-26 15:10 | better-sqlite3 → pure JSON storage | Native binding broke when user's other terminal had Node 22 vs build's Node 20 (NODE_MODULE_VERSION 115 vs 127). JSON works on any Node 20+ + any Vercel runtime + zero install pain. Dataset is tiny (hundreds of rows) so perf is fine. |
+| 2026-04-26 15:30 | viewer/public/demo-status.json is **committed**, not gitignored | We want Vercel-hosted viewer to show a meaningful frozen demo from first load. CLI overwrites this file locally for live dev; only the latest committed version reaches production. Compromise: small JSON noise in git diffs is worth always-on demo. |
+| 2026-04-26 15:32 | writeStatus now mkdir -p + stderr on failure | Used to silently swallow ENOENT; the viewer would 404 forever and we'd not notice. Loud failure > silent failure — always. |
 
 ---
 
 ## Status (live — update at end of each session)
 
 ### ✅ Done
-- Project scaffold (TypeScript + tsx + better-sqlite3 + @google/genai)
-- Gemini API smoke test passes
-- Agent loop produces decisions end-to-end (sort-bug demo: 4 decisions, fixes the bug)
-- SQLite schema + capture-run CLI command
+- Project scaffold (TypeScript + tsx + @google/genai)
+- Gemini API smoke test passes (3 keys round-robin)
+- Agent loop produces decisions end-to-end (sort-bug demo: 3-4 decisions, fixes the bug)
+- JSON storage + capture-run CLI command (no native deps)
 - Divergence finding + diff CLI command
 - git worktree fork primitive
 - Oracle subprocess wrapper
 - Bisect algorithm with K=3 majority vote, runs end-to-end
-- status.json writer (no consumer yet)
+- status.json writer with mkdir -p + stderr-on-fail
+- Next.js viewer (`viewer/app/page.tsx`) — timeline + bisection progress + result card, polls `/demo-status.json` every 1 s
+- Frozen demo captured at `viewer/public/demo-status.json` (4.5 KB, sort-bug, rounds_used=2)
 - Repo restructure: examples/ + tmp-demo/, no nested git
-- README, LICENSE (MIT), DEVLOG, package.json metadata
+- README (KO/EN), LICENSE (MIT), DEVLOG, package.json metadata
+- Pushed to GitHub `mrjunejeong/cmux-bisect@main` (sha 8242a76)
 - Pre-commit safety check passes (no keys in tracked sources)
 
 ### ⚠️ Known issues / honest gaps
-- **Bisect demo is too easy.** Gemini Flash is so capable it ignores misleading replay context and fixes the bug at every midpoint → all trials PASS, bisect localizes to the very last decision (trivial answer). Need a harder demo task where the bad decisions actually trap the agent. Options to try:
-  1. Reduce `max-turns` so the agent can't recover
-  2. Pick a task where the bad run modifies a different file the agent then commits to
-  3. Use a multi-step bug where each "wrong" decision narrows the solution space irreversibly
-- **No Vercel viewer yet.** `viewer/` is empty. Hour 5-6 of the build plan.
-- **No tests.** Only smoke scripts, no unit tests. Acceptable for hackathon, document as roadmap.
+- **Bisect demo is too easy.** Gemini Flash is so capable it ignores misleading replay context and fixes the bug at every midpoint → all trials PASS, bisect localizes to the very last decision (trivial answer). Need a harder demo task. Options:
+  1. Reduce `--max-turns 2` so the agent can't recover
+  2. Multi-step bug where each "wrong" decision narrows the solution space irreversibly
+  3. Capture a bad run that hits max-turns without fixing
+- **No tests.** Only smoke scripts, no unit tests. Acceptable for hackathon.
 - **No Claude Code adapter.** README claims adapters are roadmap — keep it that way for v0.1.
+- **Vercel project not yet imported** (user does this in web UI; auto-deploy after).
 
 ### 🔜 Next session
-1. Engineer a harder demo task so bisect produces a meaningful (non-trivial) answer
-2. Build viewer/ Next.js app polling status.json
-3. Push to Vercel, get the public URL into README
-4. Record 60-second demo video as fallback
-5. Pitch deck (5 slides) — see briefing §9
+1. ✋ User: import to Vercel (web UI, Root Directory = `viewer`) → get the public URL
+2. Update README + DEVLOG with actual URL → second commit → triggers Vercel rebuild
+3. Engineer a harder demo task so bisect produces a meaningful (non-trivial) answer (Phase E1)
+4. Record 60-second demo video as wifi-failure fallback (Phase E2)
+5. PRESENTATION.md — 60-s narrative + 4 Q&A defenses (Phase E5)
+6. Pitch deck (5 slides) — see briefing §9 (Phase E3)
+
+### 🌐 Vercel deploy walkthrough (사용자 행동, 1회만)
+
+1. https://vercel.com → "Sign Up" → "Continue with GitHub" (mrjunejeong 계정 연결)
+2. Dashboard → "Add New..." → "Project"
+3. cmux-bisect repo "Import"
+4. **Configure Project** 화면:
+   - Project Name: `cmux-bisect`
+   - Framework Preset: Next.js (auto-detected)
+   - **Root Directory: `viewer`** ← ⚠️ 핵심 한 칸. 안 바꾸면 build fail
+   - 나머지 default
+5. "Deploy" → 30-60s 후 URL 확보 (e.g. `cmux-bisect-XXX.vercel.app`)
+6. Vercel dashboard → Settings → Domains → 원하면 `cmux-bisect.vercel.app` 로 alias
+7. URL 알려주면 README + DEVLOG 박고 두 번째 commit → push → 자동 rebuild
 
 ---
 

@@ -1,0 +1,2 @@
+# Tracks viewer/public/ in git so the dir exists for Vercel build.
+# demo-status.json lives here — committed as a frozen demo Vercel always serves.

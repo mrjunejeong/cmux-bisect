@@ -32,7 +32,9 @@ Thumbs.db
 .idea/
 *.swp
 
-# cmux-bisect runtime
+# cmux-bisect runtime (NOT viewer/public/demo-status.json — that one we DO commit
+# as the frozen demo Vercel serves; CLI overwrites it locally for live dev,
+# but only the latest committed version reaches production)
 cmux-bisect.db
 cmux-bisect.db-journal
 cmux-bisect.json
@@ -40,4 +42,3 @@ cmux-bisect.json
 status.json
 *.session.jsonl
 tmp-demo/
-viewer/public/demo-status.json

@@ -79,6 +79,14 @@ export async function bisect(opts: BisectOpts): Promise<BisectResult> {
   const history: { round: number; midpoint: number; passed: boolean }[] = [];
   let round = 0;
 
+  const toViewerDecision = (d: StoredDecision) => ({
+    decision_id: d.decision_id,
+    turn: d.turn,
+    tool_name: d.tool_name,
+    args_json: d.args_json,
+    result: d.result.slice(0, 200),
+  });
+
   const status: BisectStatus = {
     phase: "starting",
     good_run_id: goodRunId,
@@ -92,6 +100,10 @@ export async function bisect(opts: BisectOpts): Promise<BisectResult> {
     current_midpoint: -1,
     trial_votes: [],
     history,
+    good_decisions: good.map(toViewerDecision),
+    bad_decisions: bad.map(toViewerDecision),
+    user_prompt: userPrompt,
+    oracle_cmd: oracleCmd,
     updated_at: Date.now(),
   };
   writeStatus(status);

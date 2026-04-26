@@ -2,6 +2,8 @@
 
 > **AI 에이전트의 결정 트리에 `git bisect` 를 적용. `log₂(N)` 시도로 첫 번째 잘못된 tool call 찾기.**
 >
+> 🌐 **라이브 데모**: https://cmux-bisect.vercel.app *(셋업 완료 후 활성화)*  ·  📦 [GitHub](https://github.com/mrjunejeong/cmux-bisect)
+>
 > *(English version below ↓)*
 
 AI coding agent (Claude Code / Codex / Gemini CLI / 직접 만든 것) 가 30분 task 를 돌려서 깨진 결과를 내놨을 때, 가장 어려운 디버깅 질문은 **"50개 결정 중 어느 것이 첫 번째로 잘못된 결정인가?"** 입니다.
@@ -36,41 +38,47 @@ export GEMINI_API_KEY=AIza...   # 또는 GEMINI_API_KEY_1..N 으로 round-robin
 
 ## 빠른 시작 (5분)
 
-```bash
-# 1. 번들된 demo task 를 새 git repo 로 materialize
-npm run init-example
-# → ./tmp-demo/sort-bug 준비됨 (Python unittest oracle, 깨진 sort_unique)
+> 단순화: 한 줄씩 복사하면 끝. 처음 부터 끝까지 ~5분.
 
-# 2. 깨진 demo 에 대해 agent 두 번 capture
+```bash
+# 0. (한 번만) 번들된 demo 를 깨끗한 git repo 로 만든다
+npm run init-example
+# → ./tmp-demo/sort-bug/ 생성. Python unittest 가 처음엔 FAIL (의도한 버그)
+
 DEMO=$(pwd)/tmp-demo/sort-bug
-npx tsx src/cli.ts capture-run \
-  --repo $DEMO --run-id GOOD \
+
+# 1. GOOD run — agent 가 src/ 를 고쳐서 테스트 통과시킨다
+npx tsx src/cli.ts capture-run --repo $DEMO --run-id GOOD \
   --prompt "src/sortlib.py 를 고쳐서 모든 unittest 통과시켜라."
 
-# bad run 전에 demo 리셋
-git -C $DEMO checkout -- .
+git -C $DEMO checkout -- .   # 다음 run 위해 demo 깨진 상태로 복원
 
-npx tsx src/cli.ts capture-run \
-  --repo $DEMO --run-id BAD \
+# 2. BAD run — 일부러 잘못된 방향으로 유도 (tests 를 수정하라고 prompt)
+npx tsx src/cli.ts capture-run --repo $DEMO --run-id BAD \
   --prompt "테스트가 잘못되었다. tests/test_sort.py 를 sort_unique 의 현재 동작에 맞게 수정해라. src/ 는 건드리지 마라."
 
-# bisect 전에 다시 리셋 (각 trial 이 자체 worktree spawn)
 git -C $DEMO checkout -- .
 
-# 3. 첫 번째 나쁜 결정 찾기
-npx tsx src/cli.ts bisect \
-  --good GOOD --bad BAD \
-  --repo $DEMO \
+# 3. bisect — 두 run 사이에서 첫 나쁜 결정을 binary search 로 찾는다
+npx tsx src/cli.ts bisect --good GOOD --bad BAD --repo $DEMO \
   --prompt "src/sortlib.py 를 고쳐서 모든 unittest 통과시켜라." \
   --oracle "python3 -m unittest discover tests/" \
   --trials 3
 ```
 
+bisect 는 매 round 마다 `viewer/public/demo-status.json` 을 갱신합니다. 라이브로 시각화하려면 별도 터미널에서:
+
+```bash
+cd viewer && npm install && npm run dev   # localhost:3000 에서 라이브 polling
+```
+
+또는 [Vercel 호스팅 버전](https://cmux-bisect.vercel.app) 으로 결과를 공유.
+
 ## 명령어
 
 | 명령어 | 하는 일 |
 |---|---|
-| `cmux-bisect capture-run --repo <p> --run-id <id> --prompt <p>` | repo 에 agent 한 번 돌리고 결정을 `cmux-bisect.db` 에 저장 |
+| `cmux-bisect capture-run --repo <p> --run-id <id> --prompt <p>` | repo 에 agent 한 번 돌리고 결정을 `cmux-bisect.json` 에 저장 |
 | `cmux-bisect show-run --run-id <id>` | 저장된 run 의 결정 출력 |
 | `cmux-bisect diff --good <id> --bad <id>` | 두 run 의 divergence point 표시 |
 | `cmux-bisect bisect --good <id> --bad <id> --repo <p> --prompt <p> --oracle <cmd>` | binary search 로 첫 나쁜 결정 찾기 |
@@ -85,7 +93,7 @@ npx tsx src/cli.ts bisect \
 - `write_file(path, content)` — overwrite
 - `bash(cmd)` — 30초 timeout
 
-기본 모델 = `gemini-2.5-flash`. 결정 (tool call + 결과) 은 SQLite 에 first-class schema 로 저장 — 외부 CLI 의 session log 파싱 X.
+기본 모델 = `gemini-2.5-flash`. 결정 (tool call + 결과) 은 JSON 파일 (`cmux-bisect.json`) 에 first-class schema 로 저장 — 외부 CLI 의 session log 파싱 X. native dep 0.
 
 ## 아키텍처
 
